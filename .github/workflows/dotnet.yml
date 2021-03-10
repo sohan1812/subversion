@@ -7,7 +7,8 @@ on:
     branches: [ main ]
 
 env:
-  AZURE_WEBAPP_NAME: demo-app-sc
+  AZURE_WEBAPP_NAME: sohan-webapp
+
 jobs:
   build:
 
