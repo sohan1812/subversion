@@ -1,0 +1,36 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AZURE_WEBAPP_NAME: demo-app-sc
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+      run: dotnet restore ${{github.workspace}}/WebApplication1/WebApplication1/WebApplication1.csproj
+    - name: Build
+      run: dotnet build ${{github.workspace}}/WebApplication1/WebApplication1/WebApplication1.csproj --no-restore
+    - name: Test
+      run: dotnet test ${{github.workspace}}/WebApplication1/WebApplication1/WebApplication1.csproj --no-build --verbosity normal
+    - name: publish
+      run: dotnet publish ${{github.workspace}}/WebApplication1/WebApplication1/WebApplication1.csproj -c Release -o dotnetwebapp
+    - name: deploy to Azure webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: './dotnetwebapp'
+      
