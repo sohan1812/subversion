@@ -19,19 +19,35 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.x
+        dotnet-version: 3.1.301
     - name: Restore dependencies
       run: dotnet restore ${{github.workspace}}/WebApplication1/WebApplication1/WebApplication1.csproj
     - name: Build
       run: dotnet build ${{github.workspace}}/WebApplication1/WebApplication1/WebApplication1.csproj --no-restore
     - name: Test
       run: dotnet test ${{github.workspace}}/WebApplication1/WebApplication1/WebApplication1.csproj --no-build --verbosity normal
-    - name: publish
-      run: dotnet publish ${{github.workspace}}/WebApplication1/WebApplication1/WebApplication1.csproj -c Release -o dotnetwebapp
-    - name: deploy to Azure webapp
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: './dotnetwebapp'
-      
+    - name: pack
+      run: dotnet pack ${{github.workspace}}/WebApplication1/WebApplication1/WebApplication1.csproj --output ./artifacts -p:version=$GIT_HUB_RUN_ID --verbosity normal
+    -name: Upload Artifacts
+	 uses: actions/upload-artifacts@v2
+	 with:
+	   name: nupkg
+	   path: ./artifacts/*.nupkg
+	   
+	publish:
+      needs: Build
+	  if: github.ref == 'ref/head/develop' || github.ref == 'ref/head/main'
+	  runs-on: ubuntu-latest
+	  steps:
+	    - name: Download Artifacts
+		  uses: actions/download-artifacts@v1
+		  with:
+		    name: nupkg
+		- name: Setup .NET Core
+		  uses: actions/setup-dotnet@v1
+		  with:
+		    dotnet-version: 3.1.301
+		- name: Add Package Source
+		  run: dotnet nuget add source https://nuget.pkg.github.com/OWNER/index.json -n github -u sohan1812 -p ${{secrets.NUGETAPIKEY}} --store-password-in-clear-text
+		- name: publish
+          run: dotnet nuget push ./nupkg/**.nupkg --source github --api-key	${{secrets.NUGETAPIKEY}}
