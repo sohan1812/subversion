@@ -28,8 +28,4 @@ jobs:
       run: dotnet test ${{github.workspace}}/WebApplication1/WebApplication1/WebApplication1.csproj --no-build --verbosity normal
     - name: pack
       run: dotnet pack ${{github.workspace}}/WebApplication1/WebApplication1/WebApplication1.csproj --output ./artifacts -p:version=$GIT_HUB_RUN_ID --verbosity normal
-    - name: Upload Artifacts
-      uses: actions/upload-artifacts@v2
-      with:
-	name: nupkg
-	path: ./artifacts/*.nupkg
+  
