@@ -1,10 +1,7 @@
 name: .NET
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  fork
 
 env:
   AZURE_WEBAPP_NAME: sohan-webapp
